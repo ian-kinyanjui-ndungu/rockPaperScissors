@@ -1,4 +1,29 @@
-console.log("Hello World");
+let humanScore = 0;
+let computerScore = 0;
+const winScore = 5;
+let gameActive = true;
+let currentRound = 1;
+
+const humanScoreDisplay = document.getElementById('human-score');
+const computerScoreDisplay = document.getElementById('computer-score');
+const resultText = document.getElementById('result-text');
+const roundNumber = document.getElementById('round-number');
+const playerChoiceDisplay = document.getElementById('player-choice-display');
+const computerChoiceDisplay = document.getElementById('computer-choice-display');
+const playerChoiceText = document.getElementById('player-choice-text');
+const computerChoiceText = document.getElementById('computer-choice-text');
+const resetButton = document.getElementById('reset-game');
+
+document.getElementById('rock').addEventListener('click', () => {
+    if (gameActive) playRound('rock', getComputerChoice());
+});
+document.getElementById('paper').addEventListener('click', () => {
+    if (gameActive) playRound('paper', getComputerChoice());
+});
+document.getElementById('scissors').addEventListener('click', () => {
+    if (gameActive) playRound('scissors', getComputerChoice());
+});
+resetButton.addEventListener('click', resetGame);
 
 function getComputerChoice() {
     const randomNumber = Math.random();
@@ -12,60 +37,109 @@ function getComputerChoice() {
     }
 }
 
-function getHumanChoice() {
-    const choice = prompt("Enter rock, paper, or scissors:");
+function updateChoiceDisplay(choice, isPlayer) {
+    const display = isPlayer ? playerChoiceDisplay : computerChoiceDisplay;
+    const textDisplay = isPlayer ? playerChoiceText : computerChoiceText;
+    const iconElement = display.querySelector('.choice-icon');
     
-    return choice.toLowerCase();
+    textDisplay.textContent = choice;
+    
+    if (choice === 'rock') {
+        iconElement.textContent = '✊';
+    } else if (choice === 'paper') {
+        iconElement.textContent = '✋';
+    } else if (choice === 'scissors') {
+        iconElement.textContent = '✌️';
+    } else {
+        iconElement.textContent = '?';
+    }
 }
 
-let humanScore = 0;
-let computerScore = 0;
-
 function playRound(humanChoice, computerChoice) {
-    console.log(`You chose: ${humanChoice}`);
-    console.log(`Computer chose: ${computerChoice}`);
-    
-    humanChoice = humanChoice.toLowerCase();
+    updateChoiceDisplay(humanChoice, true);
+    updateChoiceDisplay(computerChoice, false);
     
     if (humanChoice === computerChoice) {
-        console.log("It's a tie!");
+        resultText.textContent = "It's a tie!";
     } else if (
         (humanChoice === "rock" && computerChoice === "scissors") ||
         (humanChoice === "paper" && computerChoice === "rock") ||
         (humanChoice === "scissors" && computerChoice === "paper")
     ) {
         humanScore++;
-        console.log(`You win! ${humanChoice} beats ${computerChoice}`);
+        resultText.textContent = "You win!";
     } else {
         computerScore++;
-        console.log(`You lose! ${computerChoice} beats ${humanChoice}`);
+        resultText.textContent = "Computer wins!";
     }
     
-    console.log(`Score - You: ${humanScore}, Computer: ${computerScore}`);
+    humanScoreDisplay.textContent = humanScore;
+    computerScoreDisplay.textContent = computerScore;
+    
+    currentRound++;
+    roundNumber.textContent = currentRound;
+    
+    if (humanScore >= winScore || computerScore >= winScore) {
+        endGame();
+    }
 }
 
-function playGame() {
+function endGame() {
+    gameActive = false;
+    
+    if (humanScore >= winScore) {
+        resultText.textContent = "Game over! You win!";
+    } else {
+        resultText.textContent = "Game over! Computer wins!";
+    }
+    
+    const gameOver = document.createElement('div');
+    gameOver.className = 'game-over';
+    
+    const gameOverText = document.createElement('div');
+    gameOverText.textContent = humanScore >= winScore ? 
+        "You are the champion!" : 
+        "Better luck next time!";
+    
+    const finalScore = document.createElement('div');
+    finalScore.textContent = `Final Score: ${humanScore} - ${computerScore}`;
+    finalScore.style.fontSize = '24px';
+    finalScore.style.marginTop = '20px';
+    
+    const playAgain = document.createElement('button');
+    playAgain.textContent = 'Play Again';
+    playAgain.style.marginTop = '30px';
+    playAgain.style.padding = '10px 20px';
+    playAgain.style.fontSize = '18px';
+    playAgain.style.backgroundColor = '#ab7826';
+    playAgain.style.color = 'white';
+    playAgain.style.border = 'none';
+    playAgain.style.borderRadius = '5px';
+    playAgain.style.cursor = 'pointer';
+    
+    playAgain.addEventListener('click', () => {
+        document.body.removeChild(gameOver);
+        resetGame();
+    });
+    
+    gameOver.appendChild(gameOverText);
+    gameOver.appendChild(finalScore);
+    gameOver.appendChild(playAgain);
+    
+    document.body.appendChild(gameOver);
+}
+
+function resetGame() {
     humanScore = 0;
     computerScore = 0;
+    currentRound = 1;
+    gameActive = true;
     
-    console.log("Welcome to Rock Paper Scissors!");
-    console.log("We'll play 5 rounds. Best score wins!");
+    humanScoreDisplay.textContent = '0';
+    computerScoreDisplay.textContent = '0';
+    roundNumber.textContent = '1';
+    resultText.textContent = 'Choose to start!';
     
-    for (let round = 1; round <= 5; round++) {
-        console.log(`\nRound ${round}:`);
-        const humanSelection = getHumanChoice();
-        const computerSelection = getComputerChoice();
-        playRound(humanSelection, computerSelection);
-    }
-    
-    console.log("\nGame Over!");
-    if (humanScore > computerScore) {
-        console.log(`You win the game! Final score: You ${humanScore} - Computer ${computerScore}`);
-    } else if (computerScore > humanScore) {
-        console.log(`Computer wins the game! Final score: Computer ${computerScore} - You ${humanScore}`);
-    } else {
-        console.log(`It's a tie! Final score: ${humanScore} - ${computerScore}`);
-    }
+    updateChoiceDisplay('None', true);
+    updateChoiceDisplay('None', false);
 }
-
-playGame();
